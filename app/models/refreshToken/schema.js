@@ -4,23 +4,28 @@ const mongoose = require("mongoose");
  * Refresh Token Schema
  * @private
  */
-const schema = new mongoose.Schema({
-  token: {
-    type: String,
-    required: true,
-    index: true
+const schema = new mongoose.Schema(
+  {
+    token: {
+      type: String,
+      required: true,
+      index: true
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    userEmail: {
+      type: String,
+      ref: "User",
+      required: true
+    },
+    expires: { type: Date }
   },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
-  userEmail: {
-    type: String,
-    ref: "User",
-    required: true
-  },
-  expires: { type: Date }
-});
+  {
+    timestamps: true
+  }
+);
 
 module.exports = { schema };

@@ -39,15 +39,6 @@ const schema = new mongoose.Schema(
     },
     countryRequest: {
       type: String
-    },
-    ipChanged: {
-      type: String
-    },
-    browserChanged: {
-      type: String
-    },
-    countryChanged: {
-      type: String
     }
   },
   {

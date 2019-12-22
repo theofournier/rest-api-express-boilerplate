@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
-const { errorMessages } = require("../../utils/constants");
+const { errorMessages, auth } = require("../../utils/constants");
 
 /**
  * User Roles
  */
-const roles = ["user", "admin"];
+const roles = [auth.USER, auth.ADMIN];
 
 const schema = new mongoose.Schema(
   {
@@ -26,13 +26,12 @@ const schema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
-      select: false
+      required: true
     },
     role: {
       type: String,
       enum: roles,
-      default: "user"
+      default: auth.USER
     },
     services: {
       facebook: String,
@@ -47,13 +46,11 @@ const schema = new mongoose.Schema(
     },
     loginAttempts: {
       type: Number,
-      default: 0,
-      select: false
+      default: 0
     },
     blockExpires: {
       type: Date,
-      default: Date.now,
-      select: false
+      default: Date.now
     }
   },
   {

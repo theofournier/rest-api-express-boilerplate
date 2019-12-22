@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const crypto = require("crypto");
+const uuidv4 = require("uuid/v4");
 const moment = require("moment-timezone");
 
 const { refreshTokenExpirationInterval } = require("../../../config/vars");
@@ -13,20 +13,20 @@ schema.statics = {
    * @param {User} user
    * @returns {RefreshToken}
    */
-  async generate(user) {
+  generate(user) {
     const userId = user._id;
     const userEmail = user.email;
-    const token = `${userId}.${crypto.randomBytes(40).toString("hex")}`;
+    const token = `${userId}.${uuidv4()}`;
     const expires = moment()
       .add(refreshTokenExpirationInterval, "days")
       .toDate();
-    const tokenObject = new RefreshToken({
+    const tokenObject = new this({
       token,
       userId,
       userEmail,
       expires
     });
-    await tokenObject.save();
+    tokenObject.save();
     return tokenObject;
   }
 };

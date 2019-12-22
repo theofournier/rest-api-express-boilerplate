@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const crypto = require("crypto");
+const uuidv4 = require("uuid/v4");
 const moment = require("moment-timezone");
 
 const {
@@ -18,7 +18,7 @@ schema.statics = {
   async generate(user, ip, browser, country) {
     const userId = user._id;
     const userEmail = user.email;
-    const verification = `${userId}.${crypto.randomBytes(40).toString("hex")}`;
+    const verification = `${userId}.${uuidv4()}`;
     const expires = moment()
       .add(passwordResetTokenExpirationInterval, "hours")
       .toDate();

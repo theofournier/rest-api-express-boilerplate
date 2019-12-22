@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt-nodejs");
+const bcrypt = require("bcryptjs");
 const mongoosePaginate = require("mongoose-paginate-v2");
 const httpStatus = require("http-status");
 const moment = require("moment-timezone");
@@ -11,7 +11,9 @@ const APIError = require("../../utils/APIError");
 const {
   env,
   jwtExpirationInterval,
-  jwtSecret
+  jwtSecret,
+  loginAttempts,
+  hoursToBlock
 } = require("../../../config/vars");
 
 const { errorMessages } = require("../../utils/constants");
@@ -40,7 +42,7 @@ schema.pre("save", async function save(next) {
 schema.method({
   transform() {
     const transformed = {};
-    const fields = ["id", "name", "email", "role", "createdAt", "verified"];
+    let fields = ["id", "name", "email", "role", "createdAt", "verified"];
     if (env !== "production") {
       fields = [...fields, "verification"];
     }
@@ -57,7 +59,7 @@ schema.method({
       data: this._id
     };
     const options = {};
-    if (jwtExpirationInterval != null) {
+    if (jwtExpirationInterval) {
       options.expiresIn = `${jwtExpirationInterval}min`;
     }
     return jwt.sign(payload, jwtSecret, options);
@@ -65,13 +67,27 @@ schema.method({
 
   async passwordMatches(password) {
     return bcrypt.compare(password, this.password);
+  },
+
+  isBlocked() {
+    return this.blockExpires > new Date();
+  },
+
+  blockIsExpired() {
+    return (
+      this.loginAttempts > loginAttempts && this.blockExpires <= new Date()
+    );
+  },
+
+  chechRegisterWithService() {
+    return Object.keys(this.services).length > 0;
   }
 });
 
 /**
  * Statics
  */
-userSchema.statics = {
+schema.statics = {
   roles,
 
   /**
@@ -118,24 +134,79 @@ userSchema.statics = {
       status: httpStatus.UNAUTHORIZED,
       isPublic: true
     };
+    // Throw error if user is blocked
+    if (user.isBlocked()) {
+      throw new APIError({ ...err, message: errorMessages.USER_BLOCKED });
+    } else if (user.blockIsExpired()) {
+      // Else, reset login attempts if block expires
+      user.loginAttempts = 0;
+      await user.save();
+    }
     if (password) {
       if (user && (await user.passwordMatches(password))) {
+        // Reset login attempts if good password
+        user.loginAttempts = 0;
+        await user.save();
         return { user, accessToken: user.token() };
       } else if (!user) {
         err.message = errorMessages.EMAIL_REQUIRED;
       } else {
-        err.message = errorMessages.INVALID_PASSWORD;
+        // Check if login with service (FB, GOOGLE)
+        if (user.chechRegisterWithService()) {
+          err.message = errorMessages.LOGGED_WITH_SERVICES;
+          err.error = Object.keys(user.services);
+        } else {
+          // Add 1 login attempts if wrong password
+          user.loginAttempts += 1;
+          await user.save();
+          err.message = errorMessages.INVALID_PASSWORD;
+          // Block user if too many attempts
+          if (user.loginAttempts > loginAttempts) {
+            user.blockExpires = addHours(new Date(), hoursToBlock);
+            await user.save();
+            err.message = errorMessages.TOO_MANY_ATTEMPTS;
+          }
+        }
       }
-    } else if (refreshObject && refreshObject.userEmail === email) {
+    }
+    // if no password check the refresh token
+    else if (refreshObject && refreshObject.userEmail === email) {
       if (moment(refreshObject.expires).isBefore()) {
-        err.message = errorMessages.INVALID_REFRESH_TOKEN;
+        err.message = errorMessages.REFRESH_TOKEN_EXPIRED;
       } else {
         return { user, accessToken: user.token() };
       }
     } else {
-      err.message = errorMessages.REFRESH_TOKEN_REQUIRED;
+      err.message = errorMessages.INVALID_REFRESH_TOKEN;
     }
     throw new APIError(err);
+  },
+
+  /**
+   * Return verified user if exists and not already verified
+   *
+   * @param {String} id - The verification of user.
+   * @returns {Promise<User, APIError>}
+   */
+  async verifyUser(id) {
+    try {
+      let user = await this.findOne({
+        verification: id,
+        verified: false
+      }).exec();
+      if (user) {
+        user.verified = true;
+        await user.save();
+        return user;
+      }
+
+      throw new APIError({
+        message: errorMessages.USER_NOT_FOUND_OR_ALREADY_VERIFIED,
+        status: httpStatus.NOT_FOUND
+      });
+    } catch (error) {
+      throw error;
+    }
   },
 
   /**

@@ -1,9 +1,8 @@
 const path = require("path");
 
 // import .env variables
-require("dotenv-safe").load({
-  path: path.join(__dirname, "../../.env"),
-  sample: path.join(__dirname, "../../.env.example")
+require("dotenv-safe").config({
+  allowEmptyValues: true
 });
 
 module.exports = {
@@ -14,6 +13,8 @@ module.exports = {
   refreshTokenExpirationInterval: process.env.REFRESH_TOKEN_EXPIRATION_DAYS,
   passwordResetTokenExpirationInterval:
     process.env.PASSWORD_RESET_TOKEN_EXPIRATION_HOURS,
+  loginAttempts: process.env.LOGIN_ATTEMPTS,
+  hoursToBlock: process.env.HOURS_TO_BLOCK,
   mongo: {
     uri:
       process.env.NODE_ENV === "test"
