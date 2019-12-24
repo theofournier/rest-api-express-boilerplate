@@ -4,7 +4,6 @@ const httpStatus = require("http-status");
 const moment = require("moment-timezone");
 const jwt = require("jsonwebtoken");
 const uuidv4 = require("uuid/v4");
-const { omitBy, isNil } = require("lodash");
 
 const APIError = require("../../utils/APIError");
 const {

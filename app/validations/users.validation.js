@@ -2,6 +2,7 @@ const { param, body, query } = require("express-validator");
 
 const { validationResult } = require("../middlewares/utils");
 const { validationErrorMessages } = require("../utils/constants");
+const { passwordLength } = require("../../config/vars");
 const User = require("../models/user");
 
 /**
@@ -38,11 +39,14 @@ exports.createUser = [
     .isEmail()
     .withMessage(validationErrorMessages.INVALID_EMAIL),
   body("password")
-    .optional()
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
+    .exists()
+    .withMessage(validationErrorMessages.MISSING)
+    .notEmpty()
+    .withMessage(validationErrorMessages.IS_EMPTY)
     .isLength({
-      min: 5
+      min: passwordLength
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
   body("role")
@@ -77,11 +81,14 @@ exports.replaceUser = [
     .isEmail()
     .withMessage(validationErrorMessages.INVALID_EMAIL),
   body("password")
-    .optional()
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
+    .exists()
+    .withMessage(validationErrorMessages.MISSING)
+    .notEmpty()
+    .withMessage(validationErrorMessages.IS_EMPTY)
     .isLength({
-      min: 5
+      min: passwordLength
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
   body("role")
@@ -121,7 +128,7 @@ exports.updateUser = [
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
     .isLength({
-      min: 5
+      min: passwordLength
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
   body("role")

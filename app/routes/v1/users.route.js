@@ -3,7 +3,7 @@ const trimRequest = require("trim-request");
 
 const { authorize } = require("../../middlewares/auth");
 const {
-  auth: { USER, LOGGED_USER, ADMIN }
+  auth: { ADMIN }
 } = require("../../utils/constants");
 const validate = require("../../validations/users.validation");
 const controller = require("../../controllers/users.controller");
@@ -68,28 +68,6 @@ router
   );
 
 router
-  .route("/profile")
-  /**
-   * @api {get} v1/users/profile User Profile
-   * @apiDescription Get logged in user profile information
-   * @apiVersion 1.0.0
-   * @apiName UserProfile
-   * @apiGroup User
-   * @apiPermission user
-   *
-   * @apiHeader {String} Authorization   User's access token
-   *
-   * @apiSuccess {String}  id         User's id
-   * @apiSuccess {String}  name       User's name
-   * @apiSuccess {String}  email      User's email
-   * @apiSuccess {String}  role       User's role
-   * @apiSuccess {Date}    createdAt  Timestamp
-   *
-   * @apiError (Unauthorized 401)  Unauthorized  Only authenticated Users can access the data
-   */
-  .get(authorize(), trimRequest.all, controller.loggedIn);
-
-router
   .route("/:id")
   /**
    * @api {get} v1/users/:id Get User
@@ -111,12 +89,7 @@ router
    * @apiError (Forbidden 403)    Forbidden    Only user with same id or admins can access the data
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
-  .get(
-    authorize(LOGGED_USER),
-    trimRequest.all,
-    validate.idParam,
-    controller.get
-  )
+  .get(authorize(ADMIN), trimRequest.all, validate.idParam, controller.get)
   /**
    * @api {put} v1/users/:id Replace User
    * @apiDescription Replace the whole user document with a new one
@@ -145,7 +118,7 @@ router
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
   .put(
-    authorize(LOGGED_USER),
+    authorize(ADMIN),
     trimRequest.all,
     validate.replaceUser,
     controller.replace
@@ -178,7 +151,7 @@ router
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
   .patch(
-    authorize(LOGGED_USER),
+    authorize(ADMIN),
     trimRequest.all,
     validate.updateUser,
     controller.update
@@ -200,7 +173,7 @@ router
    * @apiError (Not Found 404)    NotFound      User does not exist
    */
   .delete(
-    authorize(LOGGED_USER),
+    authorize(ADMIN),
     trimRequest.all,
     validate.idParam,
     controller.remove

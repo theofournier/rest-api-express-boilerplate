@@ -2,10 +2,10 @@ const httpStatus = require("http-status");
 const passport = require("passport");
 const User = require("../models/user");
 const APIError = require("../utils/APIError");
-const { authErrorMessages, auth } = require("../utils/constants");
-
-const ADMIN = auth.ADMIN;
-const LOGGED_USER = auth.LOGGED_USER;
+const {
+  authErrorMessages,
+  auth: { ADMIN, LOGGED_USER }
+} = require("../utils/constants");
 
 const handleJWT = (req, res, next, roles) => async (err, user, info) => {
   const error = err || info;
@@ -24,6 +24,8 @@ const handleJWT = (req, res, next, roles) => async (err, user, info) => {
       apiError.message = authErrorMessages.ACCESS_TOKEN_EXPIRED;
     if (e.message === "No auth token")
       apiError.message = authErrorMessages.ACCESS_TOKEN_REQUIRED;
+    if (e.message === "invalid signature")
+      apiError.message = authErrorMessages.INVALID_ACCESS_TOKEN;
     return next(apiError);
   }
 

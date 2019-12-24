@@ -2,6 +2,7 @@ const { body } = require("express-validator");
 
 const { validationResult } = require("../middlewares/utils");
 const { validationErrorMessages } = require("../utils/constants");
+const { passwordLength } = require("../../config/vars");
 
 /**
  * Validates register request
@@ -31,7 +32,7 @@ exports.register = [
     .notEmpty()
     .withMessage(validationErrorMessages.IS_EMPTY)
     .isLength({
-      min: 5
+      min: passwordLength
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
   (req, res, next) => {
@@ -60,7 +61,7 @@ exports.login = [
     .notEmpty()
     .withMessage(validationErrorMessages.IS_EMPTY)
     .isLength({
-      min: 5
+      min: passwordLength
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
   (req, res, next) => {
@@ -164,7 +165,7 @@ exports.passwordReset = [
     .notEmpty()
     .withMessage(validationErrorMessages.IS_EMPTY)
     .isLength({
-      min: 5
+      min: passwordLength
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
   body("verification")

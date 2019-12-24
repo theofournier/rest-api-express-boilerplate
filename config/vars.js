@@ -15,6 +15,7 @@ module.exports = {
     process.env.PASSWORD_RESET_TOKEN_EXPIRATION_HOURS,
   loginAttempts: process.env.LOGIN_ATTEMPTS,
   hoursToBlock: process.env.HOURS_TO_BLOCK,
+  passwordLength: process.env.PASSWORD_LENGTH,
   mongo: {
     uri:
       process.env.NODE_ENV === "test"
