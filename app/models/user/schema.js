@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const uuidv4 = require("uuid/v4");
 
-const { errorMessages, auth } = require("../../utils/constants");
+const { validationErrorMessages, auth } = require("../../utils/constants");
 
 /**
  * User Roles
@@ -18,7 +19,7 @@ const schema = new mongoose.Schema(
       type: String,
       validate: {
         validator: validator.isEmail,
-        message: errorMessages.INVALID_EMAIL
+        message: validationErrorMessages.INVALID_EMAIL
       },
       lowercase: true,
       unique: true,
@@ -38,7 +39,8 @@ const schema = new mongoose.Schema(
       google: String
     },
     verification: {
-      type: String
+      type: String,
+      default: uuidv4()
     },
     verified: {
       type: Boolean,

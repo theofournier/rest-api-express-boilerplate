@@ -1,14 +1,21 @@
-const errorMessages = {
-  USER_NOT_FOUND: "USER_NOT_FOUND",
-  USER_NOT_FOUND_OR_ALREADY_VERIFIED: "USER_NOT_FOUND_OR_ALREADY_VERIFIED",
+const validationErrorMessages = {
   VALIDATION_ERROR: "VALIDATION_ERROR",
   MISSING: "MISSING",
   IS_EMPTY: "IS_EMPTY",
-  IS_STRING: "IS_NOT_STRING",
-  IS_NUMERIC: "IS_NOT_NUMERIC",
-  IS_DATE: "IS_NOT_DATE",
-  NAME_REQUIRED: "NAME_REQUIRED",
+  IS_NOT_STRING: "IS_NOT_STRING",
+  IS_NOT_NUMERIC: "IS_NOT_NUMERIC",
+  IS_NOT_DATE: "IS_NOT_DATE",
+  IS_NOT_BASE64: "IS_NOT_BASE64",
+  INVALID_SORT_ORDER: "INVALID_SORT_ORDER",
   INVALID_EMAIL: "INVALID_EMAIL",
+  PAGE_MIN: "PAGE_MIN",
+  PER_PAGE_MIN: "PER_PAGE_MIN",
+  INVALID_ROLE: "INVALID_ROLE"
+};
+
+const authErrorMessages = {
+  USER_NOT_FOUND: "USER_NOT_FOUND",
+  USER_NOT_FOUND_OR_ALREADY_VERIFIED: "USER_NOT_FOUND_OR_ALREADY_VERIFIED",
   EMAIL_REQUIRED: "EMAIL_REQUIRED",
   EMAIL_NOT_FOUND: "EMAIL_NOT_FOUND",
   PASSWORD_TOO_SHORT: "PASSWORD_TOO_SHORT",
@@ -24,21 +31,49 @@ const errorMessages = {
   RESET_TOKEN_EXPIRED: "RESET_TOKEN_EXPIRED",
   EMAIL_EXISTS: "EMAIL_EXISTS",
   LOGGED_WITH_SERVICES: "LOGGED_WITH_SERVICES",
-  PAGE_MIN: "PAGE_MIN",
-  PER_PAGE_MIN: "PER_PAGE_MIN",
-  INVALID_ROLE: "INVALID_ROLE",
-  ROLE_REQUIRED: "ROLE_REQUIRED",
-  USER_ID_REQUIRED: "USER_ID_REQUIRED",
-  NOT_FOUND: "NOT_FOUND",
   USER_BLOCKED: "USER_BLOCKED",
   TOO_MANY_ATTEMPTS: "TOO_MANY_ATTEMPTS",
   UNAUTHORIZED: "UNAUTHORIZED",
-  FORBIDDEN: "FORBIDDEN"
+  FORBIDDEN: "FORBIDDEN",
+  NOT_FOUND: "NOT_FOUND"
 };
 
 const auth = {
   ADMIN: "admin",
-  USER: "user"
+  USER: "user",
+  LOGGED_USER: "_loggedUser"
 };
 
-module.exports = { errorMessages, auth };
+const filtering = {
+  OR: "$or",
+  AFTER: "after",
+  BEFORE: "before",
+  REGEX: "regex",
+  EQ: "eq",
+  IN: "in",
+  GT: "gt",
+  LT: "lt",
+  GTE: "gte",
+  LTE: "lte",
+  EXISTS: "exists"
+};
+
+const mongoQuery = {
+  [filtering.OR]: "$or",
+  [filtering.REGEX]: "$regex",
+  [filtering.EQ]: "$eq",
+  [filtering.IN]: "$in",
+  [filtering.GT]: "$gt",
+  [filtering.LT]: "$lt",
+  [filtering.GTE]: "$gte",
+  [filtering.LTE]: "$lte",
+  [filtering.EXISTS]: "$exists"
+};
+
+module.exports = {
+  validationErrorMessages,
+  authErrorMessages,
+  auth,
+  filtering,
+  mongoQuery
+};

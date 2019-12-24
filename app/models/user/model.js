@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const mongoosePaginate = require("mongoose-paginate-v2");
 const httpStatus = require("http-status");
 const moment = require("moment-timezone");
 const jwt = require("jsonwebtoken");
@@ -16,7 +15,7 @@ const {
   hoursToBlock
 } = require("../../../config/vars");
 
-const { errorMessages } = require("../../utils/constants");
+const { authErrorMessages } = require("../../utils/constants");
 
 const { schema, roles } = require("./schema");
 
@@ -108,7 +107,7 @@ schema.statics = {
       }
 
       throw new APIError({
-        message: errorMessages.USER_NOT_FOUND,
+        message: authErrorMessages.USER_NOT_FOUND,
         status: httpStatus.NOT_FOUND
       });
     } catch (error) {
@@ -126,7 +125,7 @@ schema.statics = {
     const { email, password, refreshObject } = options;
     if (!email)
       throw new APIError({
-        message: errorMessages.EMAIL_REQUIRED
+        message: authErrorMessages.EMAIL_REQUIRED
       });
 
     const user = await this.findOne({ email }).exec();
@@ -136,7 +135,7 @@ schema.statics = {
     };
     // Throw error if user is blocked
     if (user.isBlocked()) {
-      throw new APIError({ ...err, message: errorMessages.USER_BLOCKED });
+      throw new APIError({ ...err, message: authErrorMessages.USER_BLOCKED });
     } else if (user.blockIsExpired()) {
       // Else, reset login attempts if block expires
       user.loginAttempts = 0;
@@ -149,22 +148,22 @@ schema.statics = {
         await user.save();
         return { user, accessToken: user.token() };
       } else if (!user) {
-        err.message = errorMessages.EMAIL_REQUIRED;
+        err.message = authErrorMessages.EMAIL_REQUIRED;
       } else {
         // Check if login with service (FB, GOOGLE)
         if (user.chechRegisterWithService()) {
-          err.message = errorMessages.LOGGED_WITH_SERVICES;
+          err.message = authErrorMessages.LOGGED_WITH_SERVICES;
           err.error = Object.keys(user.services);
         } else {
           // Add 1 login attempts if wrong password
           user.loginAttempts += 1;
           await user.save();
-          err.message = errorMessages.INVALID_PASSWORD;
+          err.message = authErrorMessages.INVALID_PASSWORD;
           // Block user if too many attempts
           if (user.loginAttempts > loginAttempts) {
             user.blockExpires = addHours(new Date(), hoursToBlock);
             await user.save();
-            err.message = errorMessages.TOO_MANY_ATTEMPTS;
+            err.message = authErrorMessages.TOO_MANY_ATTEMPTS;
           }
         }
       }
@@ -172,12 +171,12 @@ schema.statics = {
     // if no password check the refresh token
     else if (refreshObject && refreshObject.userEmail === email) {
       if (moment(refreshObject.expires).isBefore()) {
-        err.message = errorMessages.REFRESH_TOKEN_EXPIRED;
+        err.message = authErrorMessages.REFRESH_TOKEN_EXPIRED;
       } else {
         return { user, accessToken: user.token() };
       }
     } else {
-      err.message = errorMessages.INVALID_REFRESH_TOKEN;
+      err.message = authErrorMessages.INVALID_REFRESH_TOKEN;
     }
     throw new APIError(err);
   },
@@ -201,7 +200,7 @@ schema.statics = {
       }
 
       throw new APIError({
-        message: errorMessages.USER_NOT_FOUND_OR_ALREADY_VERIFIED,
+        message: authErrorMessages.USER_NOT_FOUND_OR_ALREADY_VERIFIED,
         status: httpStatus.NOT_FOUND
       });
     } catch (error) {
@@ -210,20 +209,14 @@ schema.statics = {
   },
 
   /**
-   * List users in descending order of 'createdAt' timestamp.
+   * List users with filters and options.
    *
    * @param {number} skip - Number of users to be skipped.
    * @param {number} limit - Limit number of users to be returned.
    * @returns {Promise<User[]>}
    */
-  list({ page = 1, perPage = 30, name, email, role }) {
-    const options = omitBy({ name, email, role }, isNil);
-
-    return this.find(options)
-      .sort({ createdAt: -1 })
-      .skip(perPage * (page - 1))
-      .limit(perPage)
-      .exec();
+  list({ options, filters }) {
+    return this.find(filters, null, options).exec();
   },
 
   /**
@@ -236,12 +229,12 @@ schema.statics = {
   checkDuplicateEmail(error) {
     if (error.name === "MongoError" && error.code === 11000) {
       return new APIError({
-        message: errorMessages.EMAIL_EXISTS,
+        message: authErrorMessages.EMAIL_EXISTS,
         errors: [
           {
             field: "email",
             location: "body",
-            messages: [errorMessages.EMAIL_EXISTS]
+            messages: [authErrorMessages.EMAIL_EXISTS]
           }
         ],
         status: httpStatus.CONFLICT,
@@ -270,8 +263,6 @@ schema.statics = {
     });
   }
 };
-
-schema.plugin(mongoosePaginate);
 
 /**
  * @typedef User

@@ -1,12 +1,26 @@
-const { body } = require("express-validator");
+const { param, body, query } = require("express-validator");
 
 const { validationResult } = require("../middlewares/utils");
 const { validationErrorMessages } = require("../utils/constants");
+const User = require("../models/user");
 
 /**
- * Validates register request
+ * Validates list of user request
  */
-exports.register = [
+exports.listUsers = [
+  query("q")
+    .optional()
+    .isBase64()
+    .withMessage(validationErrorMessages.IS_NOT_BASE64),
+  (req, res, next) => {
+    validationResult(req, res, next);
+  }
+];
+
+/**
+ * Validates create user request
+ */
+exports.createUser = [
   body("name")
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
@@ -24,25 +38,35 @@ exports.register = [
     .isEmail()
     .withMessage(validationErrorMessages.INVALID_EMAIL),
   body("password")
+    .optional()
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
-    .exists()
-    .withMessage(validationErrorMessages.MISSING)
-    .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY)
     .isLength({
       min: 5
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
+  body("role")
+    .optional()
+    .isString()
+    .withMessage(validationErrorMessages.IS_NOT_STRING)
+    .isIn(User.roles)
+    .withMessage(validationErrorMessages.INVALID_ROLE),
   (req, res, next) => {
     validationResult(req, res, next);
   }
 ];
 
 /**
- * Validates login request
+ * Validates replace user request
  */
-exports.login = [
+exports.replaceUser = [
+  body("name")
+    .isString()
+    .withMessage(validationErrorMessages.IS_NOT_STRING)
+    .exists()
+    .withMessage(validationErrorMessages.MISSING)
+    .notEmpty()
+    .withMessage(validationErrorMessages.IS_EMPTY),
   body("email")
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
@@ -53,26 +77,20 @@ exports.login = [
     .isEmail()
     .withMessage(validationErrorMessages.INVALID_EMAIL),
   body("password")
+    .optional()
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
-    .exists()
-    .withMessage(validationErrorMessages.MISSING)
-    .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY)
     .isLength({
       min: 5
     })
     .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
-  (req, res, next) => {
-    validationResult(req, res, next);
-  }
-];
-
-/**
- * Validates verify request
- */
-exports.verify = [
-  body("id")
+  body("role")
+    .optional()
+    .isString()
+    .withMessage(validationErrorMessages.IS_NOT_STRING)
+    .isIn(User.roles)
+    .withMessage(validationErrorMessages.INVALID_ROLE),
+  param("id")
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
     .exists()
@@ -85,89 +103,50 @@ exports.verify = [
 ];
 
 /**
- * Validates oAuth request
+ * Validates update user request
  */
-exports.oAuth = [
-  body("access_token")
+exports.updateUser = [
+  body("name")
+    .optional()
     .isString()
-    .withMessage(validationErrorMessages.IS_NOT_STRING)
-    .exists()
-    .withMessage(validationErrorMessages.MISSING)
-    .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY),
-  (req, res, next) => {
-    validationResult(req, res, next);
-  }
-];
-
-/**
- * Validates refresh token request
- */
-exports.refresh = [
+    .withMessage(validationErrorMessages.IS_NOT_STRING),
   body("email")
+    .optional()
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
-    .exists()
-    .withMessage(validationErrorMessages.MISSING)
-    .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY)
-    .isEmail()
-    .withMessage(validationErrorMessages.INVALID_EMAIL),
-  body("refreshToken")
-    .isString()
-    .withMessage(validationErrorMessages.IS_NOT_STRING)
-    .exists()
-    .withMessage(validationErrorMessages.MISSING)
-    .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY),
-  (req, res, next) => {
-    validationResult(req, res, next);
-  }
-];
-
-/**
- * Validates send password token request
- */
-exports.sendPasswordReset = [
-  body("email")
-    .isString()
-    .withMessage(validationErrorMessages.IS_NOT_STRING)
-    .exists()
-    .withMessage(validationErrorMessages.MISSING)
-    .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY)
-    .isEmail()
-    .withMessage(validationErrorMessages.INVALID_EMAIL),
-  (req, res, next) => {
-    validationResult(req, res, next);
-  }
-];
-
-/**
- * Validates password reset request
- */
-exports.passwordReset = [
-  body("email")
-    .isString()
-    .withMessage(validationErrorMessages.IS_NOT_STRING)
-    .exists()
-    .withMessage(validationErrorMessages.MISSING)
-    .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY)
     .isEmail()
     .withMessage(validationErrorMessages.INVALID_EMAIL),
   body("password")
+    .optional()
+    .isString()
+    .withMessage(validationErrorMessages.IS_NOT_STRING)
+    .isLength({
+      min: 5
+    })
+    .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
+  body("role")
+    .optional()
+    .isString()
+    .withMessage(validationErrorMessages.IS_NOT_STRING)
+    .isIn(User.roles)
+    .withMessage(validationErrorMessages.INVALID_ROLE),
+  param("id")
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
     .exists()
     .withMessage(validationErrorMessages.MISSING)
     .notEmpty()
-    .withMessage(validationErrorMessages.IS_EMPTY)
-    .isLength({
-      min: 5
-    })
-    .withMessage(validationErrorMessages.PASSWORD_TOO_SHORT),
-  body("verification")
+    .withMessage(validationErrorMessages.IS_EMPTY),
+  (req, res, next) => {
+    validationResult(req, res, next);
+  }
+];
+
+/**
+ * Validates with id param request
+ */
+exports.idParam = [
+  param("id")
     .isString()
     .withMessage(validationErrorMessages.IS_NOT_STRING)
     .exists()

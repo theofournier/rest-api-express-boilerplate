@@ -42,7 +42,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // i18n
 i18n.configure({
   locales: ["en", "es"],
-  directory: `${__dirname}/locales`,
+  directory: `${__dirname}/../app/locales`,
   defaultLocale: "en",
   objectNotation: true
 });

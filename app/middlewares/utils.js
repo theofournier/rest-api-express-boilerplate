@@ -3,7 +3,7 @@ const httpStatus = require("http-status");
 const requestIp = require("request-ip");
 
 const APIError = require("../utils/APIError");
-const { errorMessages } = require("../utils/constants");
+const { validationErrorMessages } = require("../utils/constants");
 
 /**
  * Gets IP from user
@@ -43,7 +43,7 @@ exports.validationResult = (req, res, next) => {
     return next(
       new APIError({
         status: httpStatus.UNPROCESSABLE_ENTITY,
-        message: errorMessages.VALIDATION_ERROR,
+        message: validationErrorMessages.VALIDATION_ERROR,
         errors: err.array()
       })
     );

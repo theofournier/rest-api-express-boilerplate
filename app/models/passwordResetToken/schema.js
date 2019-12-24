@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const { errorMessages } = require("../../utils/constants");
+const { validationErrorMessages } = require("../../utils/constants");
 
 /**
  * Refresh Token Schema
@@ -23,7 +23,7 @@ const schema = new mongoose.Schema(
       ref: "User",
       validate: {
         validator: validator.isEmail,
-        message: errorMessages.EMAIL_REQUIRED
+        message: validationErrorMessages.INVALID_EMAIL
       },
       lowercase: true,
       required: true

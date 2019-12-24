@@ -5,7 +5,7 @@ const moment = require("moment-timezone");
 
 const APIError = require("../utils/APIError");
 const { jwtExpirationInterval, env } = require("../../config/vars");
-const { errorMessages } = require("../utils/constants");
+const { authErrorMessages } = require("../utils/constants");
 const { getIP, getCountry, getBrowserInfo } = require("../middlewares/utils");
 
 const User = require("../models/user");
@@ -45,7 +45,7 @@ exports.register = async (req, res, next) => {
       throw new APIError({
         status: httpStatus.UNAUTHORIZED,
         isPublic: true,
-        message: errorMessages.LOGGED_WITH_SERVICES,
+        message: authErrorMessages.LOGGED_WITH_SERVICES,
         error: Object.keys(user.services)
       });
     }
@@ -167,7 +167,7 @@ exports.sendPasswordReset = async (req, res, next) => {
     }
     throw new APIError({
       status: httpStatus.UNAUTHORIZED,
-      message: errorMessages.EMAIL_NOT_FOUND
+      message: authErrorMessages.EMAIL_NOT_FOUND
     });
   } catch (error) {
     return next(error);
@@ -187,11 +187,11 @@ exports.resetPassword = async (req, res, next) => {
       isPublic: true
     };
     if (!resetTokenObject) {
-      err.message = errorMessages.INVALID_RESET_TOKEN;
+      err.message = authErrorMessages.INVALID_RESET_TOKEN;
       throw new APIError(err);
     }
     if (moment().isAfter(resetTokenObject.expires)) {
-      err.message = errorMessages.RESET_TOKEN_EXPIRED;
+      err.message = authErrorMessages.RESET_TOKEN_EXPIRED;
       throw new APIError(err);
     }
 

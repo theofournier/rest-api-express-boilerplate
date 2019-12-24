@@ -1,6 +1,6 @@
 const httpStatus = require("http-status");
 
-const { errorMessages } = require("../utils/constants");
+const { authErrorMessages } = require("../utils/constants");
 const APIError = require("../utils/APIError");
 const { env } = require("../../config/vars");
 
@@ -49,7 +49,7 @@ exports.converter = (err, req, res, next) => {
  */
 exports.notFound = (req, res, next) => {
   const err = new APIError({
-    message: errorMessages.NOT_FOUND,
+    message: authErrorMessages.NOT_FOUND,
     status: httpStatus.NOT_FOUND
   });
   return handler(err, req, res);
