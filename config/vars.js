@@ -16,6 +16,7 @@ module.exports = {
   loginAttempts: process.env.LOGIN_ATTEMPTS,
   hoursToBlock: process.env.HOURS_TO_BLOCK,
   passwordLength: process.env.PASSWORD_LENGTH,
+  frontendUrl: process.env.FRONTEND_URL,
   mongo: {
     uri:
       process.env.NODE_ENV === "test"
@@ -24,10 +25,13 @@ module.exports = {
   },
   logs: process.env.NODE_ENV === "production" ? "combined" : "dev",
   emailConfig: {
+    service: process.env.EMAIL_SERVICE,
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
     username: process.env.EMAIL_USERNAME,
-    password: process.env.EMAIL_PASSWORD
+    password: process.env.EMAIL_PASSWORD,
+    from: process.env.EMAIL_FROM,
+    fromName: process.env.EMAIL_FROM_NAME
   },
   redis: {
     useRedis: process.env.USE_REDIS,

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const { validationErrorMessages } = require("../../utils/constants");
 

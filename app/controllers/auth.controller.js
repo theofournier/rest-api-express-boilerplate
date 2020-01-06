@@ -7,9 +7,11 @@ const APIError = require("../utils/APIError");
 const { jwtExpirationInterval, env } = require("../../config/vars");
 const { authErrorMessages } = require("../utils/constants");
 const { getIP, getCountry, getBrowserInfo } = require("../middlewares/utils");
+const emailProvider = require("../services/emailProvider");
 
 const User = require("../models/user");
 const RefreshToken = require("../models/refreshToken");
+const PasswordResetToken = require("../models/passwordResetToken");
 
 /**
  * Returns a formated object with tokens
@@ -52,7 +54,7 @@ exports.register = async (req, res, next) => {
     user = await new User(data).save();
     const userTransformed = user.transform();
     const token = generateTokenResponse(user, user.token());
-    //TODO SEND REGISTRATION EMAIL
+    emailProvider.sendRegistration(req.getLocale(), user);
     return res
       .status(httpStatus.CREATED)
       .json({ token, user: userTransformed });
@@ -138,8 +140,7 @@ exports.refresh = async (req, res, next) => {
  */
 exports.sendPasswordReset = async (req, res, next) => {
   try {
-    const data = matchedData(req);
-    const { email } = data.body;
+    const { email } = matchedData(req);
     const user = await User.findOne({ email }).exec();
     if (user) {
       const passwordResetObj = await PasswordResetToken.generate(
@@ -148,7 +149,7 @@ exports.sendPasswordReset = async (req, res, next) => {
         getBrowserInfo(req),
         getCountry(req)
       );
-      //TODO send email reset password
+      emailProvider.sendPasswordReset(req.getLocale(), user, passwordResetObj);
       let data = {
         email,
         expires: passwordResetObj.expires
@@ -200,8 +201,6 @@ exports.resetPassword = async (req, res, next) => {
     }).exec();
     user.password = password;
     await user.save();
-    //TODO send email confirm reset password
-
     res.status(httpStatus.OK);
     return res.json({ email });
   } catch (error) {

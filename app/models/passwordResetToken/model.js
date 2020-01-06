@@ -22,7 +22,7 @@ schema.statics = {
     const expires = moment()
       .add(passwordResetTokenExpirationInterval, "hours")
       .toDate();
-    const tokenObject = new PasswordResetToken({
+    const tokenObject = new this({
       verification,
       userId,
       userEmail,

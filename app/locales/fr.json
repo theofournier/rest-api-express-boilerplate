@@ -1,0 +1,10 @@
+{
+  "registration": {
+    "SUBJECT": "Nouvel utilisateur créé pour myProject",
+    "MESSAGE": "<p>Salut %s.</p> <p>Bienvenue!</p>"
+  },
+  "forgotPassword": {
+    "SUBJECT": "Réinitialiser mot de passe pour myProject",
+    "MESSAGE": "<p>Pour réinitialiser le mot de passe de l'utilisateur : %s</p> <p>cliquer sur le lien suivant :</p> <p>%s/reset/%s</p> <p>Si c'est une erreur, vous pouvez ignorer cet email.</p> <p>Merci.</p>"
+  }
+}
